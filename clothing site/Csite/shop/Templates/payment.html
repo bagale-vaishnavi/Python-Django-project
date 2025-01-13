@@ -1,0 +1,23 @@
+{% extends 'shop/basic.html' %}
+{% block title %}Payment{% endblock %}
+{% block body %}
+<div class="container my-4">
+    <h2>Complete Your Payment</h2>
+    <p>Order ID: {{ order.id }}</p>
+    <p>Amount: Rs. {{ amount|floatformat:2 }}</p>
+
+    <form id="payment-form">
+        <script src="https://checkout.razorpay.com/v1/checkout.js"
+                data-key="{{ razorpay_key }}"
+                data-amount="{{ amount }}"
+                data-currency="{{ currency }}"
+                data-order_id="{{ razorpay_order_id }}"
+                data-buttontext="Pay Now"
+                data-name="Trendy Threads"
+                data-description="Complete Your Purchase"
+                data-theme.color="#F37254">
+        </script>
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    </form>
+</div>
+{% endblock %}

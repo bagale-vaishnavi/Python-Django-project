@@ -1,0 +1,94 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %}
+  {{ product.product_name }} | Trendy Threads
+{% endblock %}
+
+{% block body %}
+  <div class="container my-4">
+    <div class="row">
+      <!-- Product Image -->
+      <div class="col-md-4">
+        <div class="row">
+          <img src="/media/{{ product.image }}" width="233px" height="385px" alt="{{ product.product_name }}" />
+        </div>
+        <div class="row">
+          <!-- Buy Now Button -->
+          <button id="buyNow" class="btn btn-primary mx-3">Buy Now</button>
+          <!-- Add to Cart Button -->
+          <button id="pr{{ product.id }}" class="btn btn-primary cart">Add to Cart</button>
+        </div>
+      </div>
+
+      <!-- Product Details -->
+      <div class="col-md-8">
+        <h5>{{ product.product_name }}</h5>
+        <p><b>Price: Rs. {{ product.price }}</b></p>
+        <p>{{ product.desc }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Bill -->
+  <div class="modal fade" id="billModal" tabindex="-1" aria-labelledby="billModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="billModalLabel">Your Bill</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Product: <b>{{ product.product_name }}</b></p>
+          <p>Price: <b>Rs. {{ product.price }}</b></p>
+          <p>Quantity: <b>1</b></p>
+          <p>Total: <b>Rs. {{ product.price }}</b></p>
+        </div>
+        <div class="modal-footer">
+          <button id="closeModal" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Download Bill</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block js %}
+  <script>
+    // Initialize modal instance
+    const billModal = new bootstrap.Modal(document.getElementById('billModal'));
+
+    // Show modal on "Buy Now" button click
+    document.getElementById('buyNow').addEventListener('click', function () {
+      billModal.show();
+    });
+
+    // Close modal on "Close" button click
+    document.getElementById('closeModal').addEventListener('click', function () {
+      billModal.hide();
+    });
+
+    // Cart functionality (unchanged)
+    if (localStorage.getItem('cart') == null) {
+      var cart = {};
+    } else {
+      cart = JSON.parse(localStorage.getItem('cart'));
+    }
+
+    document.querySelectorAll('.cart').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var idstr = this.id.toString();
+        console.log('clicked:', idstr);
+
+        if (cart[idstr] !== undefined) {
+          cart[idstr] += 1;
+        } else {
+          cart[idstr] = 1;
+        }
+
+        console.log(cart);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = Object.keys(cart).length;
+      });
+    });
+  </script>
+{% endblock %}

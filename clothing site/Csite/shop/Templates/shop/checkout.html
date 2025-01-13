@@ -1,0 +1,154 @@
+{% extends 'shop/basic.html' %}
+{% block title%} Checkout - Trendy Threads{% endblock %}
+{% block body %}
+<div class="container">
+    <div class="col my-4">
+        <h2>Items In Your Cart </h2>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+            </ul>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mt-3">
+                    <li class="breadcrumb-item active" aria-current="page">Your Cart Total Is<b> Rs. 
+                        <span id="totalPrice">0</span></b>
+                        Enter your details below & place your order.
+                     </li>
+                </ol>
+            </nav>
+        </div>
+        <button class='btn btn-primary' onclick='clearCart()'>Clear Cart</button>
+    </div>
+    <div class="col my-4">
+        <h2>Enter Address & Other Details</h2>
+        <form method="POST" action="/shop/checkout/">{% csrf_token %}
+            <input type="hidden" name="itemsJson" id="itemsJson">
+            <input type="hidden" name="amount" id="amount">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputname">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Name" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress">Address</label>
+                <input type="text" class="form-control" id="address1" name="address1" placeholder="1234 Main St" required>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress2">Address line 2</label>
+                <input type="text" class="form-control" id="address2" name="address2" placeholder="Apartment, studio, or floor">
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="inputCity">City</label>
+                    <input type="text" class="form-control" id="city" name="city" required>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="inputState">State</label>
+                    <input type="text" class="form-control" id="state" name="state"  placeholder="Enter State" required>
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="inputZip">Zip</label>
+                    <input type="text" class="form-control" id="zip_code" name="zip_code" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputZip">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Place Order</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+   
+    function clearCart() {
+        // Iterate through all items in the cart
+        for (let item in cart) {
+            const div = document.getElementById(`divpr${item.slice(2)}`);
+            if (div) {
+                div.innerHTML = `<button id="pr${item.slice(2)}" class="btn btn-primary cart">Add To Cart</button>`;
+            }
+        }
+        
+        // Clear the cart from localStorage
+        localStorage.clear();
+        
+        // Reset the cart object
+        cart = {};
+        
+        // Update the cart display to zero
+        document.getElementById('cart').innerHTML = '0';
+        
+        // Update the cart items list to show the empty cart message
+        const itemsElement = document.getElementById('items');
+        if (itemsElement) {
+            itemsElement.innerHTML = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`;
+        }
+        
+        // Call updateCart to reflect the cleared state
+        updateCart(cart);
+    }
+    
+    
+    // Check if a cart exists in localStorage
+    if (localStorage.getItem('cart') == null) {
+        // If no cart is found, initialize an empty cart object
+        var cart = {};
+    } else {
+        // If a cart exists, parse it from the JSON string stored in localStorage
+        cart = JSON.parse(localStorage.getItem('cart'));
+    }
+    console.log(cart); // Log the current cart content for debugging purposes
+
+    var sum = 0; // Initialize a variable to calculate the total quantity of items in the cart
+
+    // Check if the cart object is empty
+var totalPrice = 0;
+if ($.isEmptyObject(cart)) {
+    //if object is empty
+    mystr = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`
+    $('#items').append(mystr);
+} else {
+    for (item in cart) {
+        let name = cart[item][1];
+        let qty = cart[item][0];
+        let Price = cart[item][1];
+        sum = sum + qty;
+        amount = totalPrice + qty * Price;
+        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                    
+                </li>`
+        $('#items').append(mystr);
+        //$('#amount').val(totalPrice.toFixed(2));
+    }
+} 
+
+    // Update the cart icon with the total number of items
+    document.getElementById('cart').innerHTML = sum;
+    document.getElementById('totalPrice').innerHTML = totalPrice;
+    // Store the cart as a JSON string in the hidden input field for form submission
+    $('#totalPrice').val(JSON.stringify(totalPrice));
+    $('#itemsJson').val(JSON.stringify(cart));
+    
+    // Check if the "thank" variable is defined (server-side context)
+    {% if thank %}
+    alert('Thanks for ordering with us. Your order id is {{id}}. Use it to track your order using our order tracker');
+    localStorage.clear(); // Clear the cart from localStorage
+    document.location = "/shop"; // Redirect the user to the shop page
+    {% endif %}
+
+    $('#amount').val($('#totalPrice').html());
+
+ 
+  
+</script>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "shop/basic.html" %}
+
+{% block title %} {{ product.product_name}}Trendy Threds{% endblock %}
+
+{% block body %} 
+</style>
+<div class="container">
+    <div class="border rounded p-4 m-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sno.</th>
+                    <th>Image</th>
+                    <th>product</th>
+                    <th>price</th>
+                    <td>Qunatity</td>
+                    <td>Total</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in Product %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td><img style="height: 80px;" class="rounded-circle" src="{{product.image.url}}" alt=""></td>
+                    <td>{{Product.product_name}}</td>
+                    <td>{{product.price}}</td>
+                 
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5">Total</th>
+                    
+                </tr>
+            </tfoot>
+        </table>
+        <div class="m-3 p-3">
+          <a href="checkout" data-toggle="modal" data-target="#exampleModal" class="btn btn-outline-info  border rounded col-lg-3 float-right" >Procees To Checkout</a> 
+          {% comment %} <a href="/checkout" class="btn btn-primary">Proceed to Checkout</a> {% endcomment %}
+
+        </div>
+    </div>
+</div>
+<script>
+    let cart = localStorage.getItem('cart') ? JSON.parse(localStorage.getItem('cart')) : {};
+    
+    // Update cart display
+    function updateCart(cart) {
+        let sum = 0;
+        for (let item in cart) {
+            sum += cart[item][0];
+            const div = document.getElementById(`divpr${item.slice(2)}`);
+            if (div) {
+                div.innerHTML = `
+                    <button id="minus${item.slice(2)}" class="btn btn-primary minus">-</button>
+                    <span id="valpr${item.slice(2)}">${cart[item][0]}</span>
+                    <button id="plus${item.slice(2)}" class="btn btn-primary plus">+</button>
+                `;
+            }
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        document.getElementById('cart').innerHTML = sum;
+        updatePopover(cart);
+    }
+    
+    // Update popover content
+    function updatePopover(cart) {
+        let popStr = '<h5>Items in your cart</h5><div class="mx-2 my-2">';
+        let i = 1;
+        for (let item in cart) {
+            const nameElement = document.getElementById(`namepr${item.slice(2)}`);
+            const name = nameElement ? nameElement.innerText.slice(0, 19) : 'Item';
+            popStr += `<b>${i}</b>. ${name}... Qty: ${cart[item][0]}<br>`;
+            i++;
+        }
+        popStr += "</div> <a href='/shop/checkout.html'> <button class='btn btn-primary'>Checkout</button></a> <button class='btn btn-primary' onclick='clearCart()'> "Clear Cart</button>";
+        document.getElementById('popcart').setAttribute('data-content', popStr);
+        $('#popcart').popover('show');
+    }
+    // Clear cart
+    function clearCart() {
+        for (let item in cart) {
+            const div = document.getElementById(`divpr${item.slice(2)}`);
+            if (div) div.innerHTML = `<button id="pr${item.slice(2)}" class = "btn btn-primary cart"> Add To Cart </button>`;
+        }
+        localStorage.clear();
+        cart = {};
+        updateCart(cart);
+    }
+    
+    // Event delegation for cart actions
+    document.querySelector('.container').addEventListener('click', function (e) {
+        const target = e.target;
+        if (target.classList.contains('cart')) {
+            const id = target.id;
+            cart[id] = cart[id] ? [cart[id][0] + 1, cart[id][1]] : [1, document.getElementById(`name${id}`).innerText];
+            updateCart(cart);
+        } else if (target.classList.contains('minus')) {
+            const id = `pr${target.id.slice(5)}`;
+            if (cart[id] && cart[id][0] > 0) {
+                cart[id][0]--;
+                if (cart[id][0] === 0) delete cart[id];
+                updateCart(cart);
+            }
+        } else if (target.classList.contains('plus')) {
+            const id = `pr${target.id.slice(4)}`;
+            cart[id] = cart[id] ? [cart[id][0] + 1, cart[id][1]] : [1, document.getElementById(`name${id}`).innerText];
+            updateCart(cart);
+        }
+    });
+    
+    // Initialize
+    updateCart(cart);
+    </script>
+  {% endblock %}
